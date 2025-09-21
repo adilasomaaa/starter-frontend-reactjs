@@ -23,3 +23,9 @@ interface SelectField extends BaseField {
 
 // Gabungkan semua tipe field menjadi satu
 export type FormFieldConfig = TextField | SelectField;
+
+export type DisplayFieldConfig<T> = {
+  key: string; // Path ke data, mendukung notasi titik (e.g., 'profile.name')
+  label: string; // Label yang akan ditampilkan (e.g., 'Nama Lengkap')
+  render?: (item: T) => React.ReactNode; // Fungsi render kustom (opsional)
+};

@@ -63,7 +63,7 @@ return (
                     {item.children.map((child) => (
                       <NavLink
                         key={child.key}
-                        to={child.to}
+                        to={child.to ?? ""}
                         className={({ isActive }) =>
                           [
                             "flex items-center gap-3 rounded-lg px-3 py-2 text-sm",

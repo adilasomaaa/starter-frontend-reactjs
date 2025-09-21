@@ -89,21 +89,20 @@ export default function VerifyPage() {
           </p>
         </CardHeader>
         <form onSubmit={handleSubmit(onSubmit)}>
-          <CardBody className="flex flex-col gap-4">
+          <CardBody className="flex justify-center gap-4">
             <Controller
               name="code"
               control={control}
               render={({ field }) => (
-                <div className="flex justify-center">
+                <div>
                   <InputOtp
-                    className="justify-center"
+                    className="justify-center mx-auto"
                     length={6}
                     value={field.value}
                     size="lg"
                     onValueChange={(v) => field.onChange(v)}
-                    // styling/props tambahan kalau perlu:
-                    // variant="bordered"
-                    // color={errors.code ? "danger" : "default"}
+                    variant="bordered"
+                    color={errors.code ? "danger" : "default"}
                   />
                   {errors.code && (
                     <span className="text-xs text-danger">{errors.code.message}</span>

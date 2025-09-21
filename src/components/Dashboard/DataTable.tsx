@@ -240,7 +240,7 @@ const DataTable = <T extends { id: React.Key; [key: string]: any }>({
                         selectedKeys={filterState[filter.key] || new Set()}
                         selectionMode={filter.selectionMode || 'multiple'} 
                         onSelectionChange={(keys) => {
-                          setFilterState(prev => ({ ...prev, [filter.key]: keys }));
+                          setFilterState((prev: Record<string, any>) => ({ ...prev, [filter.key]: keys }));
                         }}
                       >
                         {filter.options.map((option) => (
@@ -260,7 +260,7 @@ const DataTable = <T extends { id: React.Key; [key: string]: any }>({
                           type="date"
                           value={filterState[filter.key] || ''}
                           onChange={(e) => {
-                             setFilterState(prev => ({ ...prev, [filter.key]: e.target.value }));
+                             setFilterState((prev: Record<string, any>) => ({ ...prev, [filter.key]: e.target.value }));
                           }}
                        />
                     </div>

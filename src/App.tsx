@@ -10,7 +10,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import DashboardPage from './pages/dashboard/DashboardPage';
 import DashboardLayout from './layouts/DashboardLayout';
 import VerifyPage from './pages/auth/VerifyPage';
-import ManageUser from './pages/dashboard/ManageClient';
+import ManageUser from './pages/dashboard/Client/ManageClient';
 
 function RootRedirect() {
   const { user, token, isLoading } = useAuth();
@@ -44,10 +44,8 @@ function App() {
 
         {/* client-only (kalau mau admin juga bisa akses, tambahkan "admin" di roles) */}
         <Route
-          element={
-            <ProtectedRoute roles={["client","admin"]} redirectTo="/">
+          element={            
               <LandingLayout />
-            </ProtectedRoute>
           }
         >
           <Route path="/" element={<LandingPage />} />

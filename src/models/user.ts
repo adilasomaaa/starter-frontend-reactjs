@@ -1,13 +1,14 @@
 export type User = {
-  id: string;
+  id: number;
   name: string;
   photo: string;
   bio: string;
   userId: number;
   user: {
-    username: string;
     email: string;
+    createdAt: string;
   };
+  status: "active" | "inactive" | "banned";
   username?: string;
   createdAt?: string;
 };
