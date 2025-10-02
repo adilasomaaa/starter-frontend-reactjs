@@ -12,12 +12,11 @@ const TopTabs = ({active, onChange}: TopTabsProps) => {
     <div className="sticky top-0 z-20 -mx-4 lg:mx-0 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="px-4 pt-3">
         <Tabs
-          aria-label="Filter konten"
-          color="primary"
-          radius="full"
-          variant="solid"
-          selectedKey={active}
-          onSelectionChange={(k) => onChange(String(k))}
+            fullWidth
+            aria-label="Filter konten"
+            variant="solid"
+            selectedKey={active}
+            onSelectionChange={(k) => onChange(String(k))}
         >
           <Tab key="teman" title="Teman" />
           <Tab key="foryou" title="Untuk Anda" />

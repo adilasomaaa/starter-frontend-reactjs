@@ -3,17 +3,18 @@ import { Bell, Compass, Home, Plus, Search } from "lucide-react";
 import Logo from '@/assets/logo2.png'
 import AvatarPhoto from '@/assets/avatar.jpg'
 import React from "react";
+import { NavLink } from "react-router-dom";
 
 const LeftNav = () => {
    const [active, setActive] = React.useState("home");
   const items = [
-    { key: "home", label: "Home", icon: <Home size={22} /> },
-    { key: "search", label: "Search", icon: <Search size={22} /> },
-    { key: "explore", label: "Explore", icon: <Compass size={22} /> },
-    { key: "activity", label: "Activity", icon: <Bell size={22} /> },
+    { key: "home", label: "Home", icon: <Home size={22} />, to: "/" },
+    { key: "search", label: "Search", icon: <Search size={22} />, to: "/search" },
+    { key: "explore", label: "Explore", icon: <Compass size={22} />, to: "/search" },
+    { key: "activity", label: "Activity", icon: <Bell size={22} />, to: "/search" },
   ];
   return (
-    <div className="fixed left-4 top-4 bottom-4 z-30 flex w-16 flex-col items-center">
+    <div className="hidden lg:flex fixed top-0 left-0 h-screen w-28 flex-col items-center border-r border-divider bg-background py-8">
       {/* Top: Brand */}
       <div className="pt-1">
         <Button isIconOnly variant="light" radius="full" aria-label="Mojies">
@@ -26,15 +27,17 @@ const LeftNav = () => {
         {items.map((i) => (
           <Tooltip key={i.key} content={i.label} placement="right" className="text-sm">
             <Button
-              isIconOnly
-              radius="lg"
-              variant={active === i.key ? "solid" : "flat"}
-              color={active === i.key ? "default" : "default"}
-              className={`h-12 w-12 ${active === i.key ? "bg-foreground text-background" : "bg-content1"}`}
-              onPress={() => setActive(i.key)}
-              aria-label={i.label}
+                as={NavLink}
+                to={i.to}
+                isIconOnly
+                radius="lg"
+                variant={active === i.key ? "solid" : "flat"}
+                color={active === i.key ? "default" : "default"}
+                className={`h-12 w-12 ${active === i.key ? "bg-foreground text-background" : "bg-content1"}`}
+                onPress={() => setActive(i.key)}
+                aria-label={i.label}
             >
-              {i.icon}
+            {i.icon}
             </Button>
           </Tooltip>
         ))}

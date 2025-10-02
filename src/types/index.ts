@@ -1,6 +1,6 @@
 interface SelectOption {
   label: string;
-  value: string;
+  value: string | number;
 }
 
 // Tipe dasar untuk semua field
@@ -21,8 +21,14 @@ interface SelectField extends BaseField {
   readonly options: readonly SelectOption[];
 }
 
+interface MultiSelectField extends BaseField {
+  type: "multi-select";
+
+  readonly options: readonly SelectOption[];
+}
+
 // Gabungkan semua tipe field menjadi satu
-export type FormFieldConfig = TextField | SelectField;
+export type FormFieldConfig = TextField | SelectField | MultiSelectField;
 
 export type DisplayFieldConfig<T> = {
   key: string; // Path ke data, mendukung notasi titik (e.g., 'profile.name')

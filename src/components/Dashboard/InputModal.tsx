@@ -8,45 +8,35 @@ interface InputModalProps {
   onClose: () => void;
   title: string;
   fields: FormFieldConfig[];
-  initialData?: Record<string, any>;
-  onSubmit: (data: Record<string, any>) => Promise<void>;
+  onSubmit: (e?: React.BaseSyntheticEvent) => Promise<void>;
   isLoading: boolean;
+  register: any;
+  errors: any;
+  setValue: any;
+  watch: any;
 }
 
 const getValueByDotNotation = (obj: Record<string, any>, path: string) => {
   return path.split('.').reduce((acc, part) => acc && acc[part], obj);
 };
 
-const InputModal = ({ isOpen, onClose, title, fields, initialData = {}, onSubmit, isLoading }: InputModalProps) => {
-  const [formData, setFormData] = useState<Record<string, any>>({});
-
-  // Inisialisasi form data saat modal dibuka atau initialData berubah
-  useEffect(() => {
-    if (isOpen) {
-    const initialFormState = fields.reduce((acc, field) => {
-        // Gunakan helper function untuk mendapatkan nilai
-        const value = getValueByDotNotation(initialData, field.key);
-        acc[field.key] = value || field.defaultValue || '';
-        return acc;
-      }, {} as Record<string, any>);
-    
-    setFormData(initialFormState);
-  }
-  }, [isOpen]);
-
-  const handleChange = (key: string, value: any) => {
-    setFormData(prev => ({ ...prev, [key]: value }));
-  };
-
-  const handleSubmit = async () => {
-    await onSubmit(formData);
-  };
+const InputModal = ({ isOpen, 
+  onClose, 
+  title, 
+  fields, 
+  onSubmit, 
+  isLoading, 
+  register, 
+  errors,
+  setValue,
+  watch 
+}: InputModalProps) => {
 
   return (
     <Modal isOpen={isOpen} onOpenChange={onClose} placement="top-center">
       <ModalContent>
         {(onClose) => (
-          <>
+          <form onSubmit={onSubmit}>
             <ModalHeader className="flex flex-col gap-1">{title}</ModalHeader>
             <ModalBody>
               {fields.map((field) => {
@@ -57,11 +47,36 @@ const InputModal = ({ isOpen, onClose, title, fields, initialData = {}, onSubmit
                         key={field.key}
                         label={field.label}
                         placeholder={field.placeholder}
-                        selectedKeys={[formData[field.key]]}
-                        onChange={(e) => handleChange(field.key, e.target.value)}
+                        selectedKeys={watch(field.key) ? [watch(field.key)] : []}
+                        onChange={(e) => setValue(field.key, e.target.value, { shouldValidate: true })}
+                        isInvalid={!!errors[field.key]}
+                        errorMessage={errors[field.key]?.message as string}
                       >
-                        {field.options.map((option) => (
+                        {field.options?.map((option) => (
                           <SelectItem key={option.value}>
+                            {option.label}
+                          </SelectItem>
+                        ))}
+                      </Select>
+                    );
+                  case 'multi-select':
+                    return (
+                      <Select
+                        key={field.key}
+                        label={field.label}
+                        placeholder={field.placeholder}
+                        selectionMode="multiple"
+                        selectedKeys={(watch(field.key) || []).map(String)}
+                        onSelectionChange={(keys: Set<string>) => {
+                          const numericValues = Array.from(keys).map(key => Number(key));
+                          setValue(field.key, numericValues, { shouldValidate: true });
+                        }}
+                        isInvalid={!!errors[field.key]}
+                        errorMessage={errors[field.key]?.message as string}
+                      >
+                        {field.options?.map((option) => (
+                          // 3. Hapus properti 'value', cukup 'key' saja
+                          <SelectItem key={String(option.value)}> 
                             {option.label}
                           </SelectItem>
                         ))}
@@ -69,14 +84,16 @@ const InputModal = ({ isOpen, onClose, title, fields, initialData = {}, onSubmit
                     );
                   default: // text, email, password
                     return (
-                      <Input
-                        key={field.key}
-                        type={field.type}
-                        label={field.label}
-                        placeholder={field.placeholder}
-                        value={formData[field.key] || ''}
-                        onChange={(e) => handleChange(field.key, e.target.value)}
-                      />
+                      <div key={field.key}>
+                        <Input
+                          type={field.type}
+                          label={field.label}
+                          placeholder={field.placeholder}
+                          {...register(field.key)}
+                          isInvalid={!!errors[field.key]}
+                          errorMessage={errors[field.key]?.message as string}
+                        />
+                      </div>
                     );
                 }
               })}
@@ -85,11 +102,11 @@ const InputModal = ({ isOpen, onClose, title, fields, initialData = {}, onSubmit
               <Button color="default" variant="flat" onPress={onClose}>
                 Batal
               </Button>
-              <Button color="primary" onPress={handleSubmit} isLoading={isLoading}>
+              <Button color="primary" type="submit" isLoading={isLoading}>
                 Simpan
               </Button>
             </ModalFooter>
-          </>
+          </form>
         )}
       </ModalContent>
     </Modal>

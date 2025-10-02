@@ -11,69 +11,45 @@ import DataTable, {
   type FilterConfig,
 } from "../../components/Dashboard/DataTable";
 import type {
-  User,
-  UserUpdatePayload,
+  Permissions,
+  PermissionsCreatePayload,
+  PermissionsUpdatePayload
 } from "../../models";
-import { userService } from "../../services/UserService";
+import { permissionsService } from "../../services/PermissionsService";
 import type { DisplayFieldConfig, FormFieldConfig } from "../../types";
 import InputModal from "../../components/Dashboard/InputModal";
 import ShowModal from "../../components/Dashboard/ShowModal";
 import DeleteModal from "../../components/Dashboard/DeleteModal";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import type { Role } from "../../models/role";
-import { roleService } from "../../services/RoleService";
-import { userSchema, type UserSchema } from "../../schemas/UserSchema";
+import { permissionsSchema, type PermissionsSchema } from "../../schemas/PermissionsSchema";
 
-const getFormFields = (mode: "create" | "update", availableRoles: Role[]): FormFieldConfig[] => {
+const getFormFields = (mode: "create" | "update"): FormFieldConfig[] => {
   const allFields = {
-    username: { key: "username", label: "Username", type: "text", placeholder: "Masukkan username..." },
-    email: { key: "email", label: "Email", type: "email", placeholder: "contoh@email.com" },
-    role: {
-      key: "roles",
-      label: "Role",
-      type: "multi-select",
-      placeholder: "Pilih status...",
-      options: availableRoles.map(role => ({
-        label: role.name,
-        value: role.id, // Gunakan id sebagai value
-      })),
-    },
+    name: { key: "name", label: "Nama Permissions", type: "text", placeholder: "Masukkan nama permissions..." },
   } as const;
 
-  return [
-    allFields.username,
-    allFields.email,
-    allFields.role
-  ];
+  return [allFields.name];
 };
 
-const userColumns: Column<User>[] = [
-  { name: "Email",uid: "email",sortable: true,defaultVisible: true  },
-  { name: "Username", uid: "username", sortable: true, defaultVisible: true },
-  { name: "Role", 
-    uid: "userRole", 
-    sortable: true, 
-    defaultVisible: true, 
-    renderCell: (item: User) => (
-      <div className="flex flex-wrap gap-1">
-        {item.userRole.map((role) => (
-          <Chip key={role} size="sm" variant="flat">
-            {role}
-          </Chip>
-        ))}
-      </div>
-    ) },
+const permissionsColumns: Column<Permissions>[] = [
+  {
+    name: "NAME",
+    uid: "name",
+    sortable: true,
+    defaultVisible: true,
+
+  },
   { name: "ACTIONS", uid: "actions", defaultVisible: true },
 ];
 
-const ManageUser = () => {
+const ManagePermissions = () => {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [deletingItem, setDeletingItem] = useState<User | null>(null);
+  const [deletingItem, setDeletingItem] = useState<Permissions | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingItem, setEditingItem] = useState<User | null>(null);
+  const [editingItem, setEditingItem] = useState<Permissions | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [items, setItems] = useState<User[]>([]);
+  const [items, setItems] = useState<Permissions[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [paginationInfo, setPaginationInfo] = useState({
     page: 1,
@@ -82,40 +58,9 @@ const ManageUser = () => {
     totalPages: 1,
   });
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
-  const [viewingItem, setViewingItem] = useState<User | null>(null);
+  const [viewingItem, setViewingItem] = useState<Permissions | null>(null);
 
-  const [roles, setRoles] = useState<Role[]>([]);
-  const [isLoadingRoles, setIsLoadingRoles] = useState(true);
-
-  useEffect(() => {
-    const fetchRoles = async () => {
-      try {
-        const response = await roleService.index();
-        setRoles(response.data);
-      } catch (error) {
-        console.error("Gagal mengambil data roles:", error);
-        // Handle error, misalnya dengan menampilkan notifikasi
-      } finally {
-        setIsLoadingRoles(false);
-      }
-    };
-
-    fetchRoles();
-  }, []);
-
-  const {
-    register,
-    handleSubmit,
-    reset,
-    formState: { errors },
-    setValue, // 👈 Tambahkan ini
-    watch,
-  } = useForm<UserSchema>({
-    resolver: zodResolver(userSchema),
-    mode: 'onChange',
-  });
-
-  const handleOpenDeleteModal = (item: User) => {
+  const handleOpenDeleteModal = (item: Permissions) => {
     setDeletingItem(item);
     setIsDeleteModalOpen(true);
   };
@@ -125,31 +70,52 @@ const ManageUser = () => {
     setDeletingItem(null);
   };
 
-  const handleOpenEditModal = (item: User) => {
+  const handleOpenEditModal = (item: Permissions) => {
     setEditingItem(item);
     setIsModalOpen(true);
   };
 
   const handleOpenCreateModal = () => {
-      reset();
-      setEditingItem(null);
-      setIsModalOpen(true);
-    };
+    reset();
+    setEditingItem(null);
+    setIsModalOpen(true);
+  };
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
     setEditingItem(null);
-    reset();
   };
 
-  const displayFields: DisplayFieldConfig<User>[] = [
-    { key: "username", label: "Username" },
-    { key: "email", label: "Email" },
-    { key: "role", label: "Role", render: (item) => item.userRole.join(", ") },
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
+    setValue,
+    watch,
+  } = useForm<PermissionsSchema>({
+    resolver: zodResolver(permissionsSchema),
+    mode: 'onChange',
+  });
+
+  useEffect(() => {
+    if (editingItem) {
+      reset({
+        name: editingItem.name,
+      });
+    } else {
+      reset({
+        name:''
+      });
+    }
+  }, [editingItem, reset]);
+
+  const displayFields: DisplayFieldConfig<Permissions>[] = [
+    { key: "name", label: "Nama Lengkap" },
     {
       key: "createdAt",
       label: "Tanggal Bergabung",
-      render: (item) =>
+      render: (item: Permissions) =>
         new Date(item.createdAt ?? "").toLocaleDateString("id-ID", {
           year: "numeric",
           month: "long",
@@ -158,7 +124,7 @@ const ManageUser = () => {
     },
   ];
 
-  const handleOpenViewModal = (item: User) => {
+  const handleOpenViewModal = (item: Permissions) => {
     setViewingItem(item);
     setIsViewModalOpen(true);
   };
@@ -169,7 +135,7 @@ const ManageUser = () => {
   };
 
   const formMode = editingItem ? "update" : "create";
-  const activeFormFields = getFormFields(formMode, roles);
+  const activeFormFields = getFormFields(formMode);
 
   const [filterValue, setFilterValue] = useState("");
   const [sortDescriptor, setSortDescriptor] = useState<SortDescriptor>({
@@ -180,6 +146,19 @@ const ManageUser = () => {
     Record<string, Selection | string>
   >({});
 
+  const filterConfig: FilterConfig[] = [
+    {
+      key: "status",
+      label: "Status",
+      type: "dropdown",
+      selectionMode: "multiple",
+      options: [
+        { name: "Active", uid: "active" },
+        { name: "Pending", uid: "pending" },
+        { name: "Banned", uid: "banned" },
+      ],
+    },
+  ];
 
   const fetchItems = useCallback(async () => {
     setIsLoading(true);
@@ -188,7 +167,7 @@ const ManageUser = () => {
         filterState.status instanceof Set && filterState.status.size > 0
           ? Array.from(filterState.status).join(",")
           : undefined;
-      const response = await userService.index({
+      const response = await permissionsService.index({
         page: paginationInfo.page,
         limit: paginationInfo.limit,
         search: filterValue || undefined,
@@ -212,34 +191,16 @@ const ManageUser = () => {
     };
   }, [fetchItems]);
 
-  useEffect(() => {
-    if (editingItem && roles.length > 0) {
-      const roleIds = editingItem.userRole
-      .map(roleName => 
-        roles.find(role => role.name === roleName)?.id
-      )
-      .filter(id => id !== undefined) as number[];
-
-      reset({...editingItem, roles: roleIds });
-    } else {
-      reset({
-        email: "",
-        username: "",
-        roles: [],
-      });
-    }
-  }, [editingItem, reset]);
-
   const onSubmit = async (formData: Record<string, any>) => {
     setIsSubmitting(true);
     try {
       if (editingItem) {
-        await userService.update(
+        await permissionsService.update(
           Number(editingItem.id),
-          formData as UserUpdatePayload
+          formData as PermissionsUpdatePayload
         );
       } else {
-        await userService.create(formData as UserUpdatePayload);
+        await permissionsService.create(formData as PermissionsCreatePayload);
       }
       handleCloseModal();
       await fetchItems();
@@ -254,7 +215,7 @@ const ManageUser = () => {
     if (!deletingItem) return;
     setIsSubmitting(true);
     try {
-      await userService.delete(deletingItem.id);
+      await permissionsService.delete(deletingItem.id);
       handleCloseDeleteModal();
       await fetchItems();
     } catch (error) {
@@ -267,15 +228,16 @@ const ManageUser = () => {
   return (
     <div>
       <DashboardBreadcrumbs />
-      <h1 className="text-2xl font-semibold my-4">Manage User</h1>
+      <h1 className="text-2xl font-semibold my-4">Manage Permissions</h1>
       <DataTable
         data={items}
         isLoading={isLoading}
-        columns={userColumns}
+        columns={permissionsColumns}
         paginationInfo={paginationInfo}
         setPaginationInfo={setPaginationInfo}
         filterValue={filterValue}
         setFilterValue={setFilterValue}
+        filters={filterConfig}
         filterState={filterState}
         setFilterState={setFilterState}
         sortDescriptor={sortDescriptor}
@@ -289,7 +251,7 @@ const ManageUser = () => {
         isOpen={isModalOpen}
         onClose={handleCloseModal}
         title={
-          editingItem ? "Edit User" : "Tambah User Baru"
+          editingItem ? "Edit Permissions" : "Tambah Permissions Baru"
         }
         fields={activeFormFields}
         register={register}
@@ -299,11 +261,10 @@ const ManageUser = () => {
         watch={watch}
         isLoading={isSubmitting}
       />
-
-      <ShowModal<User>
+      <ShowModal<Permissions>
         isOpen={isViewModalOpen}
         onClose={handleCloseViewModal}
-        title="Detail User"
+        title="Detail Permissions"
         data={viewingItem}
         fields={displayFields}
       />
@@ -311,12 +272,12 @@ const ManageUser = () => {
         isOpen={isDeleteModalOpen}
         onClose={handleCloseDeleteModal}
         onConfirm={handleConfirmDelete}
-        title="Hapus User"
-        message={`Apakah Anda yakin ingin menghapus "${deletingItem?.email}"? Aksi ini tidak dapat dibatalkan.`}
+        title="Hapus Permissions"
+        message={`Apakah Anda yakin ingin menghapus "${deletingItem?.name}"? Aksi ini tidak dapat dibatalkan.`}
         isLoading={isSubmitting}
       />
     </div>
   );
 };
 
-export default ManageUser;
+export default ManagePermissions;

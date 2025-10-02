@@ -1,6 +1,6 @@
 // src/layout/nav.tsx
 import { type ReactNode } from "react";
-import { LayoutDashboard, Users, Settings, Home, BarChart3 } from "lucide-react";
+import { LayoutDashboard, Users, Settings, Home, BarChart3, TagIcon } from "lucide-react";
 
 export type Role = "admin" | "client" | string;
 
@@ -29,8 +29,10 @@ export const NAV_ITEMS: NavItem[] = [
     label: "Management",
     icon: <Users className="h-4 w-4" />,
     children: [
-      { key: "users",   label: "Users",   to: "/dashboard/manage-users",   icon: <Users className="h-4 w-4" /> },
-      { key: "reports", label: "Reports", to: "/reports", icon: <BarChart3 className="h-4 w-4" /> },
+      { key: "clients",   label: "Clients",   to: "/dashboard/manage-clients",   icon: <Users className="h-4 w-4" /> },
+      { key: "users", label: "Users", to: "/dashboard/manage-users", icon: <Users className="h-4 w-4" /> },
+      { key: "roles", label: "Roles", to: "/dashboard/manage-roles", icon: <TagIcon className="h-4 w-4" /> },
+      { key: "permissions", label: "Permissions", to: "/dashboard/manage-permissions", icon: <TagIcon className="h-4 w-4" /> },
     ],
   },
   { key: "reports", label: "Reports",  to: "/reports",   icon: <BarChart3 className="h-4 w-4" /> },

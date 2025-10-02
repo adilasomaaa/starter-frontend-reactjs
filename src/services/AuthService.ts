@@ -57,12 +57,12 @@ export const authService = {
         try {
             await http<void>("auth/logout", {
                 method: "POST",
-                auth: true,       // WAJIB: supaya header Bearer dikirim
+                auth: true,
             });
         } catch {
-        // abaikan 401 dari server (token kadang sudah kadaluarsa)
+            // ignore error
         } finally {
-        localStorage.removeItem("access_token");
+            localStorage.removeItem("access_token");
         }
     },
 };

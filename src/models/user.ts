@@ -1,41 +1,26 @@
 export type User = {
   id: number;
-  name: string;
-  photo: string;
-  bio: string;
-  userId: number;
-  user: {
-    email: string;
-    createdAt: string;
-  };
-  status: "active" | "inactive" | "banned";
-  username?: string;
+  email: string;
+  username: string;
+  verifiedAt?: string;
+  userRole: string[];
   createdAt?: string;
+  updatedAt?: string;
 };
 
-export type UserUpdateStatusPayload = {
-  status: "active" | "paused" | "vacation";
-};
-
-export interface UserQueryParams {
-  [key: string]: string | number | undefined;
-  page?: number;
-  limit?: number;
-  search?: string;
-  status?: string;
-}
-
-export type UserUpdatePhotoPayload = {
-  photo: string;
+export type UserCreatePayload = {
+  email: string;
+  username: string;
+  roles: string[];
 };
 
 export type UserUpdatePayload = {
-  name: string;
-  bio: string;
+  email: string;
   username: string;
+  roles: string[];
 };
 
-export interface PaginatedUsersResponse {
+export interface PaginatedUserResponse {
   data: User[];
   meta: {
     page: number;

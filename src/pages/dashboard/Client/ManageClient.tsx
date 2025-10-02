@@ -2,13 +2,16 @@ import React, { useCallback, useEffect, useState } from 'react'
 import DashboardBreadcrumbs from '../../../components/Dashboard/Breadcrumbs'
 import { type SortDescriptor, type Selection, Avatar, Chip } from '@heroui/react'
 import DataTable, { type Column, type FilterConfig } from '../../../components/Dashboard/DataTable'
-import type { RegisterPayload, User, UserUpdateStatusPayload } from '../../../models'
-import { userService } from '../../../services/UserService'
+import type { RegisterPayload, Client, ClientUpdateStatusPayload } from '../../../models'
+import { clientService } from '../../../services/ClientService'
 import type { DisplayFieldConfig, FormFieldConfig } from '../../../types'
 import InputModal from '../../../components/Dashboard/InputModal'
 import { env } from "../../../lib/env";
 import ShowModal from '../../../components/Dashboard/ShowModal'
 import DeleteModal from '../../../components/Dashboard/DeleteModal'
+import { useForm } from 'react-hook-form'
+import { clientSchema, type ClientSchema } from '../../../schemas/ClientSchema'
+import { zodResolver } from '@hookform/resolvers/zod'
 
 
 const getFormFields = (mode: 'create' | 'update'): FormFieldConfig[] => {
@@ -32,16 +35,16 @@ const getFormFields = (mode: 'create' | 'update'): FormFieldConfig[] => {
     ];
 };
 
-const userColumns: Column<User>[] = [
+const clientColumns: Column<Client>[] = [
     { 
         name: "NAME", 
         uid: "name", 
         sortable: true, 
         defaultVisible: true,
-        renderCell: (user:User) => (
+        renderCell: (client:Client) => (
             <div className='flex items-center gap-4'>
-                <Avatar src={env.baseUrl + user.photo} />
-                <span>{user.name}</span>
+                <Avatar src={env.baseUrl + client.photo} />
+                <span>{client.name}</span>
             </div>
         ),
     },
@@ -53,11 +56,11 @@ const userColumns: Column<User>[] = [
 
 const ManageClient = () => {
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-    const [deletingUser, setDeletingUser] = useState<User | null>(null);
+    const [deletingClient, setDeletingClient] = useState<Client | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [editingUser, setEditingUser] = useState<User | null>(null);
+    const [editingClient, setEditingClient] = useState<Client | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [users, setUsers] = useState<User[]>([]);
+    const [users, setClient] = useState<Client[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [paginationInfo, setPaginationInfo] = useState({
         page: 1,
@@ -66,30 +69,43 @@ const ManageClient = () => {
         totalPages: 1,
     });
 
-    const [isViewModalOpen, setIsViewModalOpen] = useState(false);
-    const [viewingUser, setViewingUser] = useState<User | null>(null);
+    const {
+        register,
+        handleSubmit,
+        reset,
+        formState: { errors },
+        setValue,
+        watch,
+      } = useForm<ClientSchema>({
+        resolver: zodResolver(clientSchema),
+        mode: 'onChange',
+      });
 
-    const handleOpenDeleteModal = (user: User) => {
-        setDeletingUser(user);
+    const [isViewModalOpen, setIsViewModalOpen] = useState(false);
+    const [viewingClient, setViewingClient] = useState<Client | null>(null);
+
+    const handleOpenDeleteModal = (client: Client) => {
+        setDeletingClient(client);
         setIsDeleteModalOpen(true);
     };
 
     const handleCloseDeleteModal = () => {
         setIsDeleteModalOpen(false);
-        setDeletingUser(null);
+        setDeletingClient(null);
     };
 
-    const handleOpenEditModal = (user: User) => {
-        setEditingUser(user);
+    const handleOpenEditModal = (client: Client) => {
+        setEditingClient(client);
         setIsModalOpen(true);
     };
     
     const handleCloseModal = () => {
         setIsModalOpen(false);
-        setEditingUser(null);
+        setEditingClient(null);
+        reset();
     };
 
-    const userDisplayFields: DisplayFieldConfig<User>[] = [
+    const userDisplayFields: DisplayFieldConfig<Client>[] = [
         { key: 'name', label: 'Nama Lengkap' },
         { key: 'username', label: 'Username' },
         { key: 'user.email', label: 'Email' },
@@ -119,17 +135,17 @@ const ManageClient = () => {
         },
     ];
 
-    const handleOpenViewModal = (user: User) => {
-        setViewingUser(user);
+    const handleOpenViewModal = (client: Client) => {
+        setViewingClient(client);
         setIsViewModalOpen(true);
     };
     
     const handleCloseViewModal = () => {
         setIsViewModalOpen(false);
-        setViewingUser(null);
+        setViewingClient(null);
     };
 
-    const formMode = editingUser ? 'update' : 'create';
+    const formMode = editingClient ? 'update' : 'create';
     
     const activeFormFields = getFormFields(formMode);
 
@@ -150,7 +166,7 @@ const ManageClient = () => {
             selectionMode: 'multiple',
             options: [
                 { name: 'Active', uid: 'active' },
-                { name: 'Pending', uid: 'pending' },
+                { name: 'Inactive', uid: 'inactive' },
                 { name: 'Banned', uid: 'banned' },
             ],
         },
@@ -163,14 +179,14 @@ const ManageClient = () => {
                 ? Array.from(filterState.status).join(',')
                 : undefined;
 
-            const response = await userService.index({
+            const response = await clientService.index({
                 page: paginationInfo.page,
                 limit: paginationInfo.limit,
                 search: filterValue || undefined,
                 status: statusValue || undefined,
             });
 
-            setUsers(response.data);
+            setClient(response.data);
             setPaginationInfo(response.meta);
         } catch (error) {
             console.error("Gagal mengambil data pengguna:", error);
@@ -194,13 +210,21 @@ const ManageClient = () => {
         };
     }, [fetchUsers]);
 
-    const handleSubmit = async (formData: Record<string, any>) => {
+    useEffect(() => {
+        if (editingClient) {
+            reset({
+                status: editingClient.status || 'active',
+            });
+        }
+    }, [editingClient, reset]);
+
+    const onSubmit = async (formData: Record<string, any>) => {
         setIsSubmitting(true);
         try {
-            if (editingUser) {
-                await userService.updateStatus(Number(editingUser.id), formData as UserUpdateStatusPayload);
+            if (editingClient) {
+                await clientService.updateStatus(Number(editingClient.id), formData as ClientUpdateStatusPayload);
             } else {
-                await userService.create(formData as RegisterPayload);
+                await clientService.create(formData as RegisterPayload);
             }
             handleCloseModal();
             await fetchUsers();
@@ -212,11 +236,11 @@ const ManageClient = () => {
     };
 
     const handleConfirmDelete = async () => {
-        if (!deletingUser) return;
+        if (!deletingClient) return;
 
         setIsSubmitting(true);
         try {
-            await userService.delete(deletingUser.id);
+            await clientService.delete(deletingClient.id);
             handleCloseDeleteModal();
             await fetchUsers(); // Refresh data tabel
         } catch (error) {
@@ -232,7 +256,7 @@ const ManageClient = () => {
         <DataTable
             data={users}
             isLoading={isLoading}
-            columns={userColumns}
+            columns={clientColumns}
             paginationInfo={paginationInfo}
             setPaginationInfo={setPaginationInfo}
             
@@ -257,18 +281,21 @@ const ManageClient = () => {
         <InputModal
             isOpen={isModalOpen}
             onClose={handleCloseModal}
-            title={editingUser ? 'Edit Pengguna' : 'Tambah Pengguna Baru'}
+            title={editingClient ? 'Edit Pengguna' : 'Tambah Pengguna Baru'}
             fields={activeFormFields}
-            initialData={editingUser || undefined} // Kirim data user yang sedang diedit
-            onSubmit={handleSubmit}
+            register={register}
+            onSubmit={handleSubmit(onSubmit)}
+            errors={errors}
+            setValue={setValue} // 👈 Teruskan ke modal
+            watch={watch}
             isLoading={isSubmitting}
         />
 
-        <ShowModal<User>
+        <ShowModal<Client>
             isOpen={isViewModalOpen}
             onClose={handleCloseViewModal}
             title="Detail Pengguna"
-            data={viewingUser}
+            data={viewingClient}
             fields={userDisplayFields}
         />
 
@@ -277,7 +304,7 @@ const ManageClient = () => {
             onClose={handleCloseDeleteModal}
             onConfirm={handleConfirmDelete}
             title="Hapus Pengguna"
-            message={`Apakah Anda yakin ingin menghapus pengguna "${deletingUser?.name}"? Aksi ini tidak dapat dibatalkan.`}
+            message={`Apakah Anda yakin ingin menghapus pengguna "${deletingClient?.name}"? Aksi ini tidak dapat dibatalkan.`}
             isLoading={isSubmitting}
         />
     </div>

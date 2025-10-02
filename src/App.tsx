@@ -1,24 +1,18 @@
-import { Navigate, Route, Routes } from 'react-router-dom';
+import { Route, Routes } from 'react-router-dom';
 import LandingLayout from './layouts/LandingLayout';
 import LandingPage from './pages/landing/LandingPage';
-import AuthLayout from './layouts/AuthLayout';
 import NotFound from './pages/NotFound';
 import LoginPage from './pages/auth/LoginPage';
 import RegisterPage from './pages/auth/RegisterPage';
-import { useAuth } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import DashboardPage from './pages/dashboard/DashboardPage';
 import DashboardLayout from './layouts/DashboardLayout';
 import VerifyPage from './pages/auth/VerifyPage';
-import ManageUser from './pages/dashboard/Client/ManageClient';
-
-function RootRedirect() {
-  const { user, token, isLoading } = useAuth();
-  if (isLoading) return null;
-
-  if (!token || !user) return <Navigate to="/login" replace />;
-
-}
+import ManageClient from './pages/dashboard/Client/ManageClient';
+import ProfilPage from './pages/landing/ProfilPage';
+import ManageUser from './pages/dashboard/ManageUser';
+import ManageRole from './pages/dashboard/ManageRole';
+import ManagePermissions from './pages/dashboard/ManagePermissions';
 
 function App() {
   return (
@@ -39,16 +33,17 @@ function App() {
           }
         >
           <Route path="/dashboard" element={<DashboardPage />} />
+          <Route path="/dashboard/manage-clients" element={<ManageClient />} />
           <Route path="/dashboard/manage-users" element={<ManageUser />} />
+          <Route path="/dashboard/manage-roles" element={<ManageRole />} />
+          <Route path="/dashboard/manage-permissions" element={<ManagePermissions />} />
         </Route>
 
-        {/* client-only (kalau mau admin juga bisa akses, tambahkan "admin" di roles) */}
-        <Route
-          element={            
-              <LandingLayout />
-          }
+        <Route element={
+          <LandingLayout />}
         >
           <Route path="/" element={<LandingPage />} />
+          <Route path="/profile" element={<ProfilPage />} />
         </Route>
       
       <Route path="*" element={<NotFound />} /> 

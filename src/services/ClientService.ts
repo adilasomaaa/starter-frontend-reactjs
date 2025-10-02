@@ -1,9 +1,9 @@
 import { http } from "../lib/fetcher"
-import type { PaginatedUsersResponse, UserUpdatePayload, User, UserQueryParams, UserUpdateStatusPayload, RegisterPayload } from "../models"
+import type { PaginatedClientResponse, ClientUpdatePayload, Client, ClientQueryParams, ClientUpdateStatusPayload, RegisterPayload } from "../models"
 
-export const userService = {
-    async index(params?: UserQueryParams){
-        return await http<PaginatedUsersResponse>('profile', {
+export const clientService = {
+    async index(params?: ClientQueryParams){
+        return await http<PaginatedClientResponse>('profile', {
             method: 'GET',
             query: params,
             auth:true
@@ -11,30 +11,30 @@ export const userService = {
     },
 
     async show(id: number){
-        return await http<{data: User}>('profile/' + id, {
+        return await http<{data: Client}>('profile/' + id, {
             method: 'GET',
             auth:true
         })
     },
 
     async create(payload: RegisterPayload){
-        return await http<{data: User}>('auth/register', {
+        return await http<{data: Client}>('auth/register', {
             method: 'POST',
             auth:true,
             body: payload
         })
     },
 
-    async update(id: number, payload: UserUpdatePayload){
-        return await http<{data: User}>('profile/' + id + '/update-profile', {
+    async update(id: number, payload: ClientUpdatePayload){
+        return await http<{data: Client}>('profile/' + id + '/update-profile', {
             method: 'PATCH',
             auth:true,
             body: payload
         })
     },
 
-    async updateStatus(id:number, payload: UserUpdateStatusPayload){
-        return await http<{data: User}>('profile/' + id + '/update-status', {
+    async updateStatus(id:number, payload: ClientUpdateStatusPayload){
+        return await http<{data: Client}>('profile/' + id + '/update-status', {
             method: 'PATCH',
             auth:true,
             body: payload
@@ -46,7 +46,7 @@ export const userService = {
 
         formData.append('photo', photo);
 
-        return await http<{ data: User }>(`profile/${id}/photo`, {
+        return await http<{ data: Client }>(`profile/${id}/photo`, {
             method: "PATCH",
             auth: true,
             body: formData,
@@ -55,7 +55,7 @@ export const userService = {
     },
 
     async delete(id:number){
-        return await http<{data: User}>('profile/' + id, {
+        return await http<{data: Client}>('profile/' + id, {
             method: 'DELETE',
             auth:true
         })

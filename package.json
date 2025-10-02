@@ -4,10 +4,11 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "vite --host",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "gen:feature": "node cli/generate-feature.js"
   },
   "dependencies": {
     "@heroui/button": "^2.2.26",
@@ -17,7 +18,9 @@
     "@hookform/resolvers": "^5.2.2",
     "@react-stately/data": "^3.14.0",
     "@tailwindcss/vite": "^4.1.13",
+    "commander": "^14.0.1",
     "framer-motion": "^12.23.12",
+    "fs-extra": "^11.3.2",
     "lodash": "^4.17.21",
     "lucide-react": "^0.544.0",
     "react": "^19.1.1",
@@ -30,6 +33,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.33.0",
+    "@types/fs-extra": "^11.0.4",
     "@types/lodash": "^4.17.20",
     "@types/react": "^19.1.10",
     "@types/react-dom": "^19.1.7",
